@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>厨房清洗维修报告生成器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .header h2 {
+            font-size: 20px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 35px 40px;
+        }
+        
+        .section {
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .section:last-of-type {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+        
+        .section-title i {
+            margin-right: 12px;
+            font-size: 24px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        
+        .info-value {
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .info-value:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        .info-value.editable::after {
+            content: "点击编辑";
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .info-value.editable:hover::after {
+            opacity: 1;
+        }
+        
+        .edit-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            background: white;
+        }
+        
+        .service-options {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .service-option {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .option-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        
+        .option-card:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .option-card.selected {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .option-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .option-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .cleaning-icon {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        
+        .repair-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+        
+        .option-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .option-desc {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .checkbox-container input {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: #3b82f6;
+        }
+        
+        .image-section {
+            margin-top: 30px;
+        }
+        
+        .image-pair {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .image-box {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .image-box-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #475569;
+            font-size: 16px;
+        }
+        
+        .image-upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+        
+        .image-upload-area:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+        }
+        
+        .image-upload-area.active {
+            border-color: #3b82f6;
+            border-style: solid;
+        }
+        
+        .image-placeholder {
+            text-align: center;
+            color: #94a3b8;
+        }
+        
+        .image-placeholder i {
+            font-size: 48px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        
+        .image-preview-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .add-pair-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .add-pair-btn:hover {
+            background: #e2e8f0;
+            border-color: #94a3b8;
+            color: #475569;
+        }
+        
+        .add-pair-btn i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        
+        /* 公司印章区域 - 浮动布局 */
+        .seal-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .thank-you-left {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .thank-you-note {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+        }
+        
+        .company-info {
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        .company-info strong {
+            color: #1e3a8a;
+        }
+        
+        .contact-info {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #475569;
+        }
+        
+        .contact-info strong {
+            color: #1e3a8a;
+        }
+        
+        .seal-right {
+            flex-shrink: 0;
+            text-align: center;
+        }
+        
+        .company-seal {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .seal-circle {
+            width: 180px;
+            height: 180px;
+            border: 3px solid #dc2626;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .seal-text {
+            text-align: center;
+            color: #dc2626;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+        
+        .seal-company-name {
+            font-size: 22px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        
+        .seal-company-subtitle {
+            font-size: 16px;
+        }
+        
+        .seal-star {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #dc2626;
+            font-size: 28px;
+        }
+        
+        .seal-label {
+            margin-top: 10px;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .motto {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #1e3a8a;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .action-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn i {
+            margin-right: 10px;
+        }
+        
+        .primary-btn {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .primary-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+        }
+        
+        .secondary-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .secondary-btn:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        
+        .validation-error {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .hidden-on-export {
+            display: block;
+        }
+        
+        /* 导出PDF的特定样式 */
+        @media print {
+            .hidden-on-export {
+                display: none !important;
+            }
+            
+            /* 隐藏占位符文本 */
+            .info-value.editable::after,
+            .add-pair-btn,
+            .actions {
+                display: none !important;
+            }
+            
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                font-size: 12pt;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .header {
+                background: #1e3a8a !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                padding: 20px 30px !important;
+            }
+            
+            .main-content {
+                padding: 25px 30px !important;
+            }
+            
+            .info-value {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                min-height: auto !important;
+                padding: 8px 12px !important;
+            }
+            
+            .option-card.selected {
+                border: 2px solid #3b82f6 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .image-upload-area {
+                border: 1px solid #ddd !important;
+                height: 250px !important;
+            }
+            
+            .image-preview {
+                max-height: 220px !important;
+            }
+            
+            /* 确保印章在打印时正常显示 */
+            .seal-circle {
+                border-color: #dc2626 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .seal-text {
+                color: #dc2626 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .seal-star {
+                color: #dc2626 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* 避免分页时图片被切断 */
+            .image-pair {
+                page-break-inside: avoid;
+            }
+            
+            .seal-section {
+                page-break-inside: avoid;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header, .main-content {
+                padding: 25px 20px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .image-pair {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .seal-section {
+                flex-direction: column;
+            }
+            
+            .seal-right {
+                margin-top: 20px;
+            }
+        }
+        
+        /* 导出选项模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .export-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .export-option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .export-option:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+        
+        .export-option.selected {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .export-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+        }
+        
+        .print-icon {
+            background: #3b82f6;
+        }
+        
+        .pdf-icon {
+            background: #ef4444;
+        }
+        
+        .docx-icon {
+            background: #10b981;
+        }
+        
+        .image-icon {
+            background: #f59e0b;
+        }
+        
+        .export-option-text h4 {
+            font-size: 16px;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .export-option-text p {
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .cancel-btn {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .export-modal-btn {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        /* 加载指示器 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="reportContainer">
+        <!-- 报告标题 -->
+        <div class="header">
+            <h1>厨房清洗维修报告</h1>
+            <h2>深圳市金顺环保服务有限公司</h2>
+        </div>
+        
+        <div class="main-content">
+            <!-- 基本信息 -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i> 基本信息
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">客户名称</div>
+                        <div class="info-value editable" id="customerName" data-field="customerName">戴德炉端烧庭院</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">客户地址</div>
+                        <div class="info-value editable" id="customerAddress" data-field="customerAddress">深圳市龙华区龙华街道中联社区新环一区4巷2号402</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">客户电话</div>
+                        <div class="info-value editable" id="customerPhone" data-field="customerPhone">13800138000</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">清洗公司名称</div>
+                        <div class="info-value editable" id="companyName" data-field="companyName">深圳市金顺环保服务有限公司</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">清洗公司地址</div>
+                        <div class="info-value editable" id="companyAddress" data-field="companyAddress">深圳市龙华区龙华街道中联社区新环一区4巷2号402</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">服务时间</div>
+                        <div class="info-value editable" id="serviceTime" data-field="serviceTime">25日22点到26日1点，用时3小时</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 服务类型选择 -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-tools"></i> 服务类型
+                    <span class="validation-error" id="serviceError">请至少选择一项服务类型</span>
+                </div>
+                <div class="service-options">
+                    <div class="service-option">
+                        <div class="option-card" id="cleaningOption">
+                            <div class="option-header">
+                                <div class="option-icon cleaning-icon">
+                                    <i class="fas fa-broom"></i>
+                                </div>
+                                <div class="option-title">清洗服务</div>
+                            </div>
+                            <div class="option-desc">
+                                包括油烟机清洗、灶台清洁、墙面油污处理等全面清洁服务，确保厨房卫生安全。
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="cleaningCheckbox">
+                                <label for="cleaningCheckbox">选择此项服务</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="service-option">
+                        <div class="option-card" id="repairOption">
+                            <div class="option-header">
+                                <div class="option-icon repair-icon">
+                                    <i class="fas fa-wrench"></i>
+                                </div>
+                                <div class="option-title">维修服务</div>
+                            </div>
+                            <div class="option-desc">
+                                包括设备故障排查、零件更换、功能修复等专业维修服务，确保厨房设备正常运行。
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="repairCheckbox">
+                                <label for="repairCheckbox">选择此项服务</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 清洗前后对比图 -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-images"></i> 清洗前后对比
+                </div>
+                <div class="image-section" id="imageSection">
+                    <!-- 图片对将通过JS动态添加 -->
+                </div>
+                
+                <div class="add-pair-btn hidden-on-export" id="addImagePairBtn">
+                    <i class="fas fa-plus-circle"></i> 添加一组清洗前后对比图
+                </div>
+            </div>
+            
+            <!-- 公司印章区域 -->
+            <div class="seal-section">
+                <div class="thank-you-left">
+                    <div class="thank-you-note">致谢！</div>
+                    <div class="company-info">
+                        感谢您选用<strong>深圳市金顺环保服务有限公司</strong>的服务！<br>
+                        本文件属于内部文件，请妥善保管。
+                    </div>
+                    <div class="contact-info">
+                        <strong>联系电话：</strong>400-6287-178
+                    </div>
+                    <div class="motto">
+                        专业创造美好生活
+                    </div>
+                </div>
+                
+                <div class="seal-right">
+                    <div class="company-seal">
+                        <div class="seal-star">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="seal-circle">
+                            <div class="seal-text">
+                                <div class="seal-company-name">深圳市金顺</div>
+                                <div class="seal-company-subtitle">环保服务有限公司</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="seal-label">公司盖章处</div>
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="actions hidden-on-export">
+                <button class="action-btn secondary-btn" id="resetBtn">
+                    <i class="fas fa-redo"></i> 重置报告
+                </button>
+                <button class="action-btn primary-btn" id="exportBtn">
+                    <i class="fas fa-file-export"></i> 导出报告
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 导出选项模态框 -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-title">选择导出方式</div>
+            <div class="export-options">
+                <div class="export-option selected" id="printOption">
+                    <div class="export-icon print-icon">
+                        <i class="fas fa-print"></i>
+                    </div>
+                    <div class="export-option-text">
+                        <h4>打印报告</h4>
+                        <p>使用浏览器打印功能生成纸质版</p>
+                    </div>
+                </div>
+                <div class="export-option" id="pdfOption">
+                    <div class="export-icon pdf-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="export-option-text">
+                        <h4>导出为PDF</h4>
+                        <p>生成高质量的PDF文件</p>
+                    </div>
+                </div>
+                <div class="export-option" id="docxOption">
+                    <div class="export-icon docx-icon">
+                        <i class="fas fa-file-word"></i>
+                    </div>
+                    <div class="export-option-text">
+                        <h4>导出为DOCX</h4>
+                        <p>生成Word文档格式</p>
+                    </div>
+                </div>
+                <div class="export-option" id="imageOption">
+                    <div class="export-icon image-icon">
+                        <i class="fas fa-file-image"></i>
+                    </div>
+                    <div class="export-option-text">
+                        <h4>保存为图片</h4>
+                        <p>将报告保存为高质量PNG图片</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" id="cancelExport">取消</button>
+                <button class="modal-btn export-modal-btn" id="confirmExport">导出</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 加载指示器 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">正在生成报告，请稍候...</div>
+    </div>
+
+    <!-- 引入jsPDF库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        // 用于生成DOCX的简单函数
+        function generateDocx() {
+            // 收集所有数据
+            const reportData = {
+                customerName: document.getElementById('customerName').textContent,
+                customerAddress: document.getElementById('customerAddress').textContent,
+                customerPhone: document.getElementById('customerPhone').textContent,
+                companyName: document.getElementById('companyName').textContent,
+                companyAddress: document.getElementById('companyAddress').textContent,
+                serviceTime: document.getElementById('serviceTime').textContent,
+                cleaningSelected: document.getElementById('cleaningCheckbox').checked,
+                repairSelected: document.getElementById('repairCheckbox').checked,
+                images: []
+            };
+            
+            // 构建DOCX内容
+            let docxContent = `厨房清洗维修报告\n`;
+            docxContent += `深圳市金顺环保服务有限公司\n\n`;
+            
+            docxContent += `基本信息\n`;
+            docxContent += `客户名称：${reportData.customerName}\n`;
+            docxContent += `客户地址：${reportData.customerAddress}\n`;
+            docxContent += `客户电话：${reportData.customerPhone}\n`;
+            docxContent += `清洗公司名称：${reportData.companyName}\n`;
+            docxContent += `清洗公司地址：${reportData.companyAddress}\n`;
+            docxContent += `服务时间：${reportData.serviceTime}\n\n`;
+            
+            docxContent += `服务类型\n`;
+            if (reportData.cleaningSelected) docxContent += `✓ 清洗服务\n`;
+            if (reportData.repairSelected) docxContent += `✓ 维修服务\n\n`;
+            
+            docxContent += `清洗前后对比\n`;
+            docxContent += `（注：实际图片在DOCX文件中无法直接嵌入，请在附件中查看图片）\n\n`;
+            
+            docxContent += `致谢！\n`;
+            docxContent += `感谢您选用深圳市金顺环保服务有限公司的服务！\n`;
+            docxContent += `本文件属于内部文件，请妥善保管。\n`;
+            docxContent += `联系电话：400-6287-178\n`;
+            docxContent += `专业创造美好生活\n`;
+            
+            // 创建Blob对象
+            const blob = new Blob([docxContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `厨房清洗维修报告_${new Date().getTime()}.docx`;
+            
+            // 触发下载
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // 释放URL对象
+            setTimeout(() => URL.revokeObjectURL(link.href), 100);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const customerName = document.getElementById('customerName');
+            const customerAddress = document.getElementById('customerAddress');
+            const customerPhone = document.getElementById('customerPhone');
+            const companyName = document.getElementById('companyName');
+            const companyAddress = document.getElementById('companyAddress');
+            const serviceTime = document.getElementById('serviceTime');
+            
+            const cleaningOption = document.getElementById('cleaningOption');
+            const repairOption = document.getElementById('repairOption');
+            const cleaningCheckbox = document.getElementById('cleaningCheckbox');
+            const repairCheckbox = document.getElementById('repairCheckbox');
+            const serviceError = document.getElementById('serviceError');
+            
+            const imageSection = document.getElementById('imageSection');
+            const addImagePairBtn = document.getElementById('addImagePairBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            const exportModal = document.getElementById('exportModal');
+            const printOption = document.getElementById('printOption');
+            const pdfOption = document.getElementById('pdfOption');
+            const docxOption = document.getElementById('docxOption');
+            const imageOption = document.getElementById('imageOption');
+            const cancelExport = document.getElementById('cancelExport');
+            const confirmExport = document.getElementById('confirmExport');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // 图片对计数器
+            let imagePairCount = 0;
+            let selectedExportType = 'print';
+            
+            // 编辑字段处理 - 简化版点击编辑
+            const editableFields = document.querySelectorAll('.info-value.editable');
+            editableFields.forEach(field => {
+                field.addEventListener('click', function() {
+                    const currentValue = this.textContent;
+                    const fieldType = this.getAttribute('data-field');
+                    
+                    // 创建输入框
+                    const inputElement = document.createElement('input');
+                    inputElement.type = 'text';
+                    inputElement.className = 'edit-input';
+                    inputElement.value = currentValue;
+                    
+                    // 替换内容为输入框
+                    this.textContent = '';
+                    this.appendChild(inputElement);
+                    inputElement.focus();
+                    inputElement.select();
+                    
+                    // 保存更改
+                    const saveEdit = () => {
+                        const newValue = inputElement.value;
+                        this.textContent = newValue || currentValue;
+                    };
+                    
+                    // 按Enter键保存
+                    inputElement.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            saveEdit();
+                        }
+                    });
+                    
+                    // 失去焦点时保存
+                    inputElement.addEventListener('blur', saveEdit);
+                });
+            });
+            
+            // 服务选择处理
+            cleaningOption.addEventListener('click', function() {
+                cleaningCheckbox.checked = !cleaningCheckbox.checked;
+                updateServiceSelection();
+            });
+            
+            repairOption.addEventListener('click', function() {
+                repairCheckbox.checked = !repairCheckbox.checked;
+                updateServiceSelection();
+            });
+            
+            cleaningCheckbox.addEventListener('change', updateServiceSelection);
+            repairCheckbox.addEventListener('change', updateServiceSelection);
+            
+            function updateServiceSelection() {
+                if (cleaningCheckbox.checked) {
+                    cleaningOption.classList.add('selected');
+                } else {
+                    cleaningOption.classList.remove('selected');
+                }
+                
+                if (repairCheckbox.checked) {
+                    repairOption.classList.add('selected');
+                } else {
+                    repairOption.classList.remove('selected');
+                }
+                
+                // 隐藏错误提示
+                serviceError.style.display = 'none';
+            }
+            
+            // 默认选中清洗服务
+            cleaningCheckbox.checked = true;
+            updateServiceSelection();
+            
+            // 创建图片对
+            function createImagePair() {
+                imagePairCount++;
+                const pairId = `pair-${imagePairCount}`;
+                
+                const imagePair = document.createElement('div');
+                imagePair.className = 'image-pair';
+                imagePair.id = pairId;
+                
+                // 清洗前图片
+                const beforeBox = document.createElement('div');
+                beforeBox.className = 'image-box';
+                
+                const beforeTitle = document.createElement('div');
+                beforeTitle.className = 'image-box-title';
+                beforeTitle.textContent = `清洗前 ${imagePairCount}`;
+                
+                const beforeUpload = document.createElement('div');
+                beforeUpload.className = 'image-upload-area';
+                beforeUpload.id = `${pairId}-before`;
+                beforeUpload.innerHTML = `
+                    <div class="image-placeholder">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div>点击上传清洗前图片</div>
+                    </div>
+                `;
+                
+                // 清洗后图片
+                const afterBox = document.createElement('div');
+                afterBox.className = 'image-box';
+                
+                const afterTitle = document.createElement('div');
+                afterTitle.className = 'image-box-title';
+                afterTitle.textContent = `清洗后 ${imagePairCount}`;
+                
+                const afterUpload = document.createElement('div');
+                afterUpload.className = 'image-upload-area';
+                afterUpload.id = `${pairId}-after`;
+                afterUpload.innerHTML = `
+                    <div class="image-placeholder">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div>点击上传清洗后图片</div>
+                    </div>
+                `;
+                
+                // 组装
+                beforeBox.appendChild(beforeTitle);
+                beforeBox.appendChild(beforeUpload);
+                
+                afterBox.appendChild(afterTitle);
+                afterBox.appendChild(afterUpload);
+                
+                imagePair.appendChild(beforeBox);
+                imagePair.appendChild(afterBox);
+                
+                // 添加图片上传事件
+                beforeUpload.addEventListener('click', function() {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.style.display = 'none';
+                    
+                    input.addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                beforeUpload.classList.add('active');
+                                beforeUpload.innerHTML = '';
+                                
+                                const container = document.createElement('div');
+                                container.className = 'image-preview-container';
+                                
+                                const img = document.createElement('img');
+                                img.src = event.target.result;
+                                img.className = 'image-preview';
+                                img.id = `${pairId}-before-img`;
+                                
+                                container.appendChild(img);
+                                beforeUpload.appendChild(container);
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                    
+                    document.body.appendChild(input);
+                    input.click();
+                    setTimeout(() => document.body.removeChild(input), 100);
+                });
+                
+                afterUpload.addEventListener('click', function() {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.style.display = 'none';
+                    
+                    input.addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                afterUpload.classList.add('active');
+                                afterUpload.innerHTML = '';
+                                
+                                const container = document.createElement('div');
+                                container.className = 'image-preview-container';
+                                
+                                const img = document.createElement('img');
+                                img.src = event.target.result;
+                                img.className = 'image-preview';
+                                img.id = `${pairId}-after-img`;
+                                
+                                container.appendChild(img);
+                                afterUpload.appendChild(container);
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                    
+                    document.body.appendChild(input);
+                    input.click();
+                    setTimeout(() => document.body.removeChild(input), 100);
+                });
+                
+                return imagePair;
+            }
+            
+            // 添加初始图片对
+            const initialPair = createImagePair();
+            imageSection.appendChild(initialPair);
+            
+            // 添加图片对按钮事件
+            addImagePairBtn.addEventListener('click', function() {
+                const newPair = createImagePair();
+                imageSection.appendChild(newPair);
+                
+                // 滚动到新添加的图片对
+                newPair.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+            
+            // 导出选项处理
+            printOption.addEventListener('click', function() {
+                selectedExportType = 'print';
+                printOption.classList.add('selected');
+                pdfOption.classList.remove('selected');
+                docxOption.classList.remove('selected');
+                imageOption.classList.remove('selected');
+            });
+            
+            pdfOption.addEventListener('click', function() {
+                selectedExportType = 'pdf';
+                pdfOption.classList.add('selected');
+                printOption.classList.remove('selected');
+                docxOption.classList.remove('selected');
+                imageOption.classList.remove('selected');
+            });
+            
+            docxOption.addEventListener('click', function() {
+                selectedExportType = 'docx';
+                docxOption.classList.add('selected');
+                printOption.classList.remove('selected');
+                pdfOption.classList.remove('selected');
+                imageOption.classList.remove('selected');
+            });
+            
+            imageOption.addEventListener('click', function() {
+                selectedExportType = 'image';
+                imageOption.classList.add('selected');
+                printOption.classList.remove('selected');
+                pdfOption.classList.remove('selected');
+                docxOption.classList.remove('selected');
+            });
+            
+            // 打开导出模态框
+            exportBtn.addEventListener('click', function() {
+                // 验证至少选择了一项服务
+                if (!cleaningCheckbox.checked && !repairCheckbox.checked) {
+                    serviceError.style.display = 'block';
+                    serviceError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                
+                exportModal.style.display = 'flex';
+            });
+            
+            // 取消导出
+            cancelExport.addEventListener('click', function() {
+                exportModal.style.display = 'none';
+            });
+            
+            // 确认导出
+            confirmExport.addEventListener('click', async function() {
+                exportModal.style.display = 'none';
+                loadingOverlay.style.display = 'flex';
+                
+                try {
+                    // 准备导出内容 - 隐藏占位符和操作按钮
+                    const reportContainer = document.getElementById('reportContainer');
+                    const elementsToHide = reportContainer.querySelectorAll('.hidden-on-export');
+                    
+                    // 存储原始显示状态
+                    const originalDisplay = [];
+                    elementsToHide.forEach(el => {
+                        originalDisplay.push(el.style.display);
+                        el.style.display = 'none';
+                    });
+                    
+                    // 根据选择的导出类型执行相应操作
+                    if (selectedExportType === 'print') {
+                        // 打印报告
+                        window.print();
+                    } else if (selectedExportType === 'pdf') {
+                        // 导出为PDF
+                        await generatePDF();
+                    } else if (selectedExportType === 'docx') {
+                        // 导出为DOCX
+                        generateDocx();
+                    } else if (selectedExportType === 'image') {
+                        // 导出为图片
+                        await generateImage();
+                    }
+                    
+                    // 恢复原始显示状态
+                    elementsToHide.forEach((el, index) => {
+                        el.style.display = originalDisplay[index];
+                    });
+                    
+                } catch (error) {
+                    console.error('导出出错:', error);
+                    alert('导出过程中出现错误，请重试。');
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            });
+            
+            // 生成PDF
+            async function generatePDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = doc.internal.pageSize.getWidth();
+                
+                // 使用html2canvas将HTML转换为canvas
+                const canvas = await html2canvas(document.getElementById('reportContainer'), {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                
+                // 将图片添加到PDF
+                const imgWidth = pageWidth - 20; // 两边留白
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                // 计算图片在PDF中的位置
+                let heightLeft = imgHeight;
+                let position = 10;
+                
+                doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= doc.internal.pageSize.getHeight();
+                
+                // 如果图片高度超过一页，添加新页
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= doc.internal.pageSize.getHeight();
+                }
+                
+                // 保存PDF
+                doc.save(`厨房清洗维修报告_${new Date().getTime()}.pdf`);
+            }
+            
+            // 生成图片
+            async function generateImage() {
+                const canvas = await html2canvas(document.getElementById('reportContainer'), {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+                
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = `厨房清洗维修报告_${new Date().getTime()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+            
+            // 重置报告
+            resetBtn.addEventListener('click', function() {
+                if (confirm('确定要重置报告吗？所有修改将丢失。')) {
+                    // 重置基本信息
+                    customerName.textContent = '戴德炉端烧庭院';
+                    customerAddress.textContent = '深圳市龙华区龙华街道中联社区新环一区4巷2号402';
+                    customerPhone.textContent = '13800138000';
+                    companyName.textContent = '深圳市金顺环保服务有限公司';
+                    companyAddress.textContent = '深圳市龙华区龙华街道中联社区新环一区4巷2号402';
+                    serviceTime.textContent = '25日22点到26日1点，用时3小时';
+                    
+                    // 重置服务选择
+                    cleaningCheckbox.checked = true;
+                    repairCheckbox.checked = false;
+                    updateServiceSelection();
+                    
+                    // 重置图片
+                    imageSection.innerHTML = '';
+                    imagePairCount = 0;
+                    const newPair = createImagePair();
+                    imageSection.appendChild(newPair);
+                    
+                    // 隐藏错误提示
+                    serviceError.style.display = 'none';
+                    
+                    alert('报告已重置为初始状态！');
+                }
+            });
+            
+            // 添加一个示例图片占位符
+            setTimeout(() => {
+                // 为第一个图片对添加示例占位符
+                const firstBefore = document.getElementById('pair-1-before');
+                const firstAfter = document.getElementById('pair-1-after');
+                
+                // 创建示例图片
+                const exampleBefore = document.createElement('div');
+                exampleBefore.style.width = '100%';
+                exampleBefore.style.height = '100%';
+                exampleBefore.style.display = 'flex';
+                exampleBefore.style.alignItems = 'center';
+                exampleBefore.style.justifyContent = 'center';
+                exampleBefore.style.background = 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)';
+                exampleBefore.style.color = '#475569';
+                exampleBefore.style.fontWeight = '600';
+                exampleBefore.style.borderRadius = '8px';
+                exampleBefore.textContent = '清洗前示例';
+                
+                const exampleAfter = document.createElement('div');
+                exampleAfter.style.width = '100%';
+                exampleAfter.style.height = '100%';
+                exampleAfter.style.display = 'flex';
+                exampleAfter.style.alignItems = 'center';
+                exampleAfter.style.justifyContent = 'center';
+                exampleAfter.style.background = 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)';
+                exampleAfter.style.color = '#065f46';
+                exampleAfter.style.fontWeight = '600';
+                exampleAfter.style.borderRadius = '8px';
+                exampleAfter.textContent = '清洗后示例';
+                
+                firstBefore.classList.add('active');
+                firstBefore.innerHTML = '';
+                const beforeContainer = document.createElement('div');
+                beforeContainer.className = 'image-preview-container';
+                beforeContainer.style.height = '100%';
+                beforeContainer.appendChild(exampleBefore);
+                firstBefore.appendChild(beforeContainer);
+                
+                firstAfter.classList.add('active');
+                firstAfter.innerHTML = '';
+                const afterContainer = document.createElement('div');
+                afterContainer.className = 'image-preview-container';
+                afterContainer.style.height = '100%';
+                afterContainer.appendChild(exampleAfter);
+                firstAfter.appendChild(afterContainer);
+            }, 500);
+        });
+    </script>
+</body>
+</html>
